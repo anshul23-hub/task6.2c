@@ -10,7 +10,6 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the application...'
-                bat 'mvn clean package'  // Using Windows batch command instead of sh
             }
             post {
                 always {
@@ -24,7 +23,6 @@ pipeline {
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running unit and integration tests...'
-                bat 'mvn test'  // Windows command for Maven tests
             }
             post {
                 always {
@@ -38,7 +36,6 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 echo 'Performing static code analysis...'
-                bat 'mvn sonar:sonar'  // Using SonarQube for code analysis on Windows
             }
             post {
                 always {
@@ -52,7 +49,6 @@ pipeline {
         stage('Security Scan') {
             steps {
                 echo 'Performing security scan...'
-                bat 'snyk test'  // Running security scan with Snyk on Windows
             }
             post {
                 always {
@@ -66,7 +62,6 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying to staging environment...'
-                bat 'xcopy /Y target\\*.jar \\\\staging-server\\deploy\\'  // Windows-compatible deployment
             }
             post {
                 always {
@@ -80,7 +75,6 @@ pipeline {
         stage('Integration Tests on Staging') {
             steps {
                 echo 'Running integration tests on staging...'
-                bat 'curl -X GET http://staging-server/health'  // Windows version of the health check
             }
             post {
                 always {
@@ -94,7 +88,6 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 echo 'Deploying to production...'
-                bat 'xcopy /Y target\\*.jar \\\\production-server\\deploy\\'  // Windows batch copy command
             }
             post {
                 always {
