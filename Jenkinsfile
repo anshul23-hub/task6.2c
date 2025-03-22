@@ -6,108 +6,118 @@ pipeline {
         USER_EMAIL = 'anshul4765.be23@chitkara.edu.in'
     }
 
-    tools {
-        maven 'Maven'  // Refers to the Maven tool configured in Jenkins
-    }
-
-    environment {
-        APP_NAME = 'Task6.2C'  // Name of the application
-    }
-
     stages {
-        stage('Checkout Code') {
+        stage('Build') {
             steps {
-                echo 'Cloning the repository from GitHub...'
-                checkout scm
+                echo 'Building the application...'
+                sh 'mvn clean package'  // Using Maven for Java builds
             }
-        }
-
-        stage('Build Application') {
-            steps {
-                echo 'Building the application using Maven...'
-                // Build using Maven and create a packaged JAR/WAR file
-                sh 'mvn clean package -DskipTests'  
+            post {
+                always {
+                    emailext to: "${USER_EMAIL}",
+                    subject: "Build Stage Completed",
+                    body: "The build stage has completed. Check Jenkins logs for details."
+                }
             }
         }
 
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running unit and integration tests...'
-                // Run tests
-                sh 'mvn test'
+                sh 'mvn test'  // Running unit and integration tests with Maven
+            }
+            post {
+                always {
+                    emailext to: "${USER_EMAIL}",
+                    subject: "Unit and Integration Tests Completed",
+                    body: "The unit and integration tests have completed. Check Jenkins logs for details."
+                }
             }
         }
 
         stage('Code Analysis') {
             steps {
-                echo 'Performing code quality analysis...'
-                // Optional: Add SonarQube or other code analysis here if needed
-                // sh 'mvn sonar:sonar -Dsonar.projectKey=Task6.2C'
+                echo 'Performing static code analysis...'
+                sh 'mvn sonar:sonar'  // Using SonarQube for code analysis
+            }
+            post {
+                always {
+                    emailext to: "${USER_EMAIL}",
+                    subject: "Code Analysis Completed",
+                    body: "The code analysis stage has completed. Check Jenkins logs for details."
+                }
             }
         }
 
         stage('Security Scan') {
             steps {
                 echo 'Performing security scan...'
-                // Optional: Add security scan commands here if needed
-                // sh 'mvn dependency-check:check'
+                sh 'snyk test'  // Using Snyk for security vulnerability scanning
+            }
+            post {
+                always {
+                    emailext to: "${USER_EMAIL}",
+                    subject: "Security Scan Completed",
+                    body: "The security scan has completed. Check Jenkins logs for details."
+                }
             }
         }
 
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying to staging environment...'
-                // Add deployment commands if necessary
-                sh 'echo "Deploying to Staging..."'
+                sh 'scp target/*.jar user@staging-server:/deploy/'  // Copying build to staging
+            }
+            post {
+                always {
+                    emailext to: "${USER_EMAIL}",
+                    subject: "Deployment to Staging Completed",
+                    body: "Deployment to the staging environment has completed. Check Jenkins logs for details."
+                }
             }
         }
 
         stage('Integration Tests on Staging') {
             steps {
                 echo 'Running integration tests on staging...'
-                // Add integration test commands if required
-                sh 'echo "Running integration tests on Staging..."'
+                sh 'curl -X GET http://staging-server/health'  // Checking staging health
+            }
+            post {
+                always {
+                    emailext to: "${USER_EMAIL}",
+                    subject: "Integration Tests on Staging Completed",
+                    body: "Integration tests on staging have completed. Check Jenkins logs for details."
+                }
             }
         }
 
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to production environment...'
-                // Add production deployment commands here
-                sh 'echo "Deploying to Production..."'
+                echo 'Deploying to production...'
+                sh 'scp target/*.jar user@production-server:/deploy/'  // Copying build to production
+            }
+            post {
+                always {
+                    emailext to: "${USER_EMAIL}",
+                    subject: "Deployment to Production Completed",
+                    body: "Deployment to production has completed. Check Jenkins logs for details."
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline executed successfully! 🎉'
-            emailext(
-                subject: "${APP_NAME} - Build Successful ✅",
-                body: """<p>The build and deployment for <b>${APP_NAME}</b> were successful! 🎉</p>
-                        <p><b>Build Details:</b><br>
-                        - Application: ${APP_NAME}<br>
-                        - Environment: Production<br>
-                        - Status: Successful</p>""",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: 'anshul4765.be23@chitkara.edu.in',
-                mimeType: 'text/html'
-            )
+            echo 'Pipeline executed successfully!'
+            emailext to: "${USER_EMAIL}",
+            subject: "Pipeline Execution Successful",
+            body: "The entire pipeline has completed successfully."
         }
         failure {
-            echo 'Pipeline failed! ❌ Check the logs for details.'
-            emailext(
-                subject: "${APP_NAME} - Build Failed ❗",
-                body: """<p>The build and deployment for <b>${APP_NAME}</b> failed! ❗</p>
-                        <p><b>Build Details:</b><br>
-                        - Application: ${APP_NAME}<br>
-                        - Environment: Staging/Production<br>
-                        - Status: Failed</p>
-                        <p>Please check the Jenkins logs for more details.</p>""",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: 'anshul4765.be23@chitkara.edu.in',
-                mimeType: 'text/html'
-            )
+            echo 'Pipeline failed! Check the logs for more details.'
+            emailext to: "${USER_EMAIL}",
+            subject: "Pipeline Execution Failed",
+            body: "The pipeline has failed. Please check the Jenkins logs for more details."
         }
     }
 }
