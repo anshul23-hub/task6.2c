@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        EMAIL_RECIPIENT = 'anshul4765.be23@chitkara.edu.in'
+        EMAIL_RECIPIENT = ‘anshul4765.be23@chitkara.edu.in’
         USER_EMAIL = 'anshul4765.be23@chitkara.edu.in'
     }
 
@@ -10,7 +10,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the application...'
-                sh 'mvn clean package'  // Using Maven for Java builds
+                bat 'mvn clean package'  // Using Windows batch command instead of sh
             }
             post {
                 always {
@@ -24,7 +24,7 @@ pipeline {
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running unit and integration tests...'
-                sh 'mvn test'  // Running unit and integration tests with Maven
+                bat 'mvn test'  // Windows command for Maven tests
             }
             post {
                 always {
@@ -38,7 +38,7 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 echo 'Performing static code analysis...'
-                sh 'mvn sonar:sonar'  // Using SonarQube for code analysis
+                bat 'mvn sonar:sonar'  // Using SonarQube for code analysis on Windows
             }
             post {
                 always {
@@ -52,7 +52,7 @@ pipeline {
         stage('Security Scan') {
             steps {
                 echo 'Performing security scan...'
-                sh 'snyk test'  // Using Snyk for security vulnerability scanning
+                bat 'snyk test'  // Running security scan with Snyk on Windows
             }
             post {
                 always {
@@ -66,7 +66,7 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying to staging environment...'
-                sh 'scp target/*.jar user@staging-server:/deploy/'  // Copying build to staging
+                bat 'xcopy /Y target\\*.jar \\\\staging-server\\deploy\\'  // Windows-compatible deployment
             }
             post {
                 always {
@@ -80,7 +80,7 @@ pipeline {
         stage('Integration Tests on Staging') {
             steps {
                 echo 'Running integration tests on staging...'
-                sh 'curl -X GET http://staging-server/health'  // Checking staging health
+                bat 'curl -X GET http://staging-server/health'  // Windows version of the health check
             }
             post {
                 always {
@@ -94,7 +94,7 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 echo 'Deploying to production...'
-                sh 'scp target/*.jar user@production-server:/deploy/'  // Copying build to production
+                bat 'xcopy /Y target\\*.jar \\\\production-server\\deploy\\'  // Windows batch copy command
             }
             post {
                 always {
